@@ -13,7 +13,11 @@ describe('blogs', function() {
             {blogs: [0, 1, 2], search: 'title'},
             {blogs: [0], search: 'One'},
             {blogs: [0, 1, 2], search: 'to'}
-    ];
+    ], newBlog = {
+        title: 'new blog title',
+        description: 'new blog description',
+        username: 'first name last name'
+    };
 
     beforeEach(openUrl('/#/liveblog'));
 
@@ -67,7 +71,6 @@ describe('blogs', function() {
             }
         });
     });
-
     describe('archive and activate a blog', function() {
         it('should archive a blog', function() {
             //open first blog
@@ -95,6 +98,18 @@ describe('blogs', function() {
             element(by.repeater('state in states').row(0).column('state.text')).click();
             //expect the first blog to be the one we activated (blog[0])
             expect(blogs[0], 0);
+        });
+    });
+    describe('add blog', function() {
+        it('should add a blog', function() {
+            element(by.css('[ng-click="openNewBlog();"]')).click();
+            //after the add new blog model is displayed
+            element(by.model('newBlog.title')).isDisplayed().then(function(isVisible) {
+                element(by.model('newBlog.title')).sendKeys(newBlog.title);
+                element(by.model('newBlog.description')).sendKeys(newBlog.description);
+                element(by.buttonText('CREATE')).click();
+            });
+            expectBlog(newBlog);
         });
     });
     function expectBlogsLength(len) {
