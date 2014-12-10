@@ -9,10 +9,9 @@
             <div class="table-row">
             <strong>{{ post.original_creator_name }}</strong> | <time>{{ post._updated | reldate }}</time>
             </div>
-            <div class="table-row">
+            <div class="table-row" lb-simple-edit se-item="post">
                 {{ post.text }}
             </div>
         </div>
     </div>
-    <div style="border-top:1px solid #CCCCCC; height: 15px"></div>
 </li>
