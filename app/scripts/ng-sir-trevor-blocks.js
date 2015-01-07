@@ -163,7 +163,11 @@ define([
                     };
                 },
                 toHTML: function() {
-                    var data = this.retrieveData();
+                    var data = this.retrieveData(),
+                        htmlCredit = '</figcaption>';
+                    if (data.credit) {
+                        htmlCredit = ' from ' + data.credit + '.</figcaption>';
+                    }
                     return [
                         '<figure>',
                         '    <img src="' + data.media._url + '" alt="' + data.caption + '"/>',
