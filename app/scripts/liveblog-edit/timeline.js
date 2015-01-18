@@ -33,6 +33,10 @@ define([
                 notify.error(gettext('Could not load posts... please try again later'));
             });
         };
+        //remove the item from the list as a stopgap until update works
+        $scope.removeFromPosts = function(post) {
+            $scope.posts.splice($scope.posts.indexOf(post), 1);
+        }
         $scope.$watch('isTimeline', function() {
             $scope.getPosts();
         });
@@ -64,16 +68,60 @@ define([
             type: 'http',
             backend: {rel: 'posts'}
         });
+        apiProvider.api('items', {
+            type: 'http',
+            backend: {rel: 'items'}
+        });
     }]).controller('TimelineController', TimelineController)
-    .directive('lbTimelineItem', ['api', 'notify', 'gettext', 'asset', function(api, notify, gettext, asset) {
+    .factory('itemsService', ['api', '$q', 'notify', 'gettext', function(api, $q, notify, gettext) {
+        var service = {};
+        service.removeItem = function(id) {
+            var deferred = $q.defer();
+            api.items.remove(id).then(function() {
+                deferred.resolve('removing done');
+            }, function() {
+                deferred.reject('something went wrong');
+            });
+            return deferred.promise;
+        }
+        return service;
+    }])
+    .directive('lbTimelineItem', ['api', 'notify', 'gettext', 'asset', 'itemsService', function(api, notify, gettext, asset, itemsService) {
         return {
             scope: {
-                post: '='
+                post: '=',
+                remove: '&'
             },
             replace: true,
             restrict: 'E',
             templateUrl: 'scripts/liveblog-edit/views/timeline-item.html',
-            link: function(scope, elem, attrs) {}
+            link: function(scope, elem, attrs) {
+                scope.removeItem = function(id) {
+                    if (confirm(gettext('Are you sure you want to remove the post?'))) {
+                        notify.info(gettext('Removing'));
+                        itemsService.removeItem(scope.post).then(function(message){
+                            notify.pop();
+                            notify.info(gettext('Removing done'));
+                            scope.remove({post:scope.post});
+                        }, function() {
+                            notify.pop();
+                            notify.alert(gettext('Something went wrong'));
+                        });
+                    }
+                }
+            }
+        };
+    }])
+    .directive('rollshow', [function() {
+        return {
+            link: function(scope, elem, attrs) {
+                elem.parent().on('mouseover', function() {
+                    elem.show();
+                });
+                elem.parent().on('mouseout', function() {
+                    elem.hide();
+                });
+            }
         };
     }])
     .directive('lbBindHtml', [function() {
